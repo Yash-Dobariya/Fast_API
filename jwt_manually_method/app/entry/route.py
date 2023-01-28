@@ -1,30 +1,26 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status
 from app.entry.schemas import CreateEntry, ResponseEntry
 from sqlalchemy.orm import Session
 from app.entry.models import EntryTable
 from app.database import get_db
-from app.utils.token import decode_access_token
 from app.entry.models import EntryTable
-from app.competition.models import CompetitionTable
-from app.utils.jwt_bearer import get_current_user
+from app.utils.jwt_bearer import  get_current_user
 from app.user.model import User 
-
+from app.competition.models import CompetitionTable
 
 entry = APIRouter()
 
 @entry.post('/entry', response_model= ResponseEntry)
-async def get_entry(current_user: User = Depends(get_current_user), *,request: Request,db_request : CreateEntry, db : Session = Depends(get_db)):
+async def get_entry(request : CreateEntry, db : Session = Depends(get_db), user: str = Depends(get_current_user)):
 
-    try:
-        access_token = request.headers["Authorization"][7:]
-        user_id = current_user.id
-        user = db.query(CompetitionTable).filter(CompetitionTable.created_by == user_id).first()
-
-    except:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="invalid token")
-
+    db_user= db.query(User).filter(User.id == user).first()
     
-    new_entry = EntryTable(title = db_request.title, topic = db_request.topic, state = db_request.state, country = db_request.country, created_by = user.id)
+    db_competition = db.query(CompetitionTable).filter(CompetitionTable.created_by == db_user.id).first()
+    new_entry = EntryTable(title = request.title,
+                           topic = request.topic, 
+                           state = request.state,
+                           country = request.country, 
+                           created_by = db_competition.id)
 
     db.add(new_entry)
     db.commit()
@@ -32,36 +28,36 @@ async def get_entry(current_user: User = Depends(get_current_user), *,request: R
     return new_entry
 
 @entry.get('/entry/all', response_model= list[ResponseEntry])
-async def get_all_entry(current_user: User = Depends(get_current_user), db : Session= Depends(get_db)):
-    try:
-        all_entry = db.query(EntryTable).all()
-        return all_entry
+async def get_all_entry(db : Session= Depends(get_db), user: str = Depends(get_current_user)):
 
-    except:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="invalid token")   
+    all_entry = db.query(EntryTable).all()
+    return all_entry   
 
 @entry.get('/entry/{id}', response_model= ResponseEntry)
-async def get_particular_entry(current_user: User = Depends(get_current_user), *,id, db : Session= Depends(get_db)):
+async def get_particular_entry(id, db : Session= Depends(get_db), user: str = Depends(get_current_user)):
+
     try:
         particular_entry = db.query(EntryTable).filter(EntryTable.id == id).first()
         return particular_entry
     except:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="invalid token")
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail="ID Not Found 😶‍🌫️")
 
 @entry.put('/update_entry/{id}')
-async def update_entry(current_user: User = Depends(get_current_user), *, db_request:CreateEntry,id,db : Session = Depends(get_db)):
+async def update_entry( request:CreateEntry, id, db : Session = Depends(get_db), user: str = Depends(get_current_user)):
+
     try:
-        db.query(EntryTable).filter(EntryTable.id == id).update(db_request.dict())
+        db.query(EntryTable).filter(EntryTable.id == id).update(request.dict())
         db.commit()
-        return { "massage":"Successfully Update"}
+        return { "massage":"Successfully Update 😁"}
     except:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="invalid token")
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail="ID Not Found 😶‍🌫️")
 
 @entry.delete('/delete_entry/{id}')
-async def delete_entry(current_user: User = Depends(get_current_user), *, id, db : Session = Depends(get_db)):
+async def delete_entry(id, db : Session = Depends(get_db), user: str = Depends(get_current_user)):
+    
     try:
         db.query(EntryTable).filter(EntryTable.id == id).delete()
         db.commit()
-        return {"message":"Delete successfully"}
+        return {"message":"Delete successfully 👍"}
     except:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="invalid token")
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail="ID Not Found 😶‍🌫️")

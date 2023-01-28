@@ -16,6 +16,5 @@ class ResponseEntry(BaseModel):
     state : str
     country: str
 
-
     class Config:
         orm_mode = True

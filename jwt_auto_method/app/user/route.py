@@ -49,13 +49,13 @@ async def get_details_signin(user : LoginUser, Authorize : AuthJWT = Depends(get
 
         raise HTTPException(status_code= status.HTTP_400_BAD_REQUEST, detail="wrong email and password 😢")
     except:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="please Signup")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Please Signup ❤️")
 
 
 
 # Create refresh token
 @user_routes.get('/refresh')
-async def refresh_token(user : LoginUser,Authorize : AuthJWT = Depends(get_config), db : Session = Depends(get_db)):
+async def refresh_token(user : LoginUser, Authorize : AuthJWT = Depends(get_config), db : Session = Depends(get_db)):
     user_email = db.query(User).filter(User.email == user.email).first()
     db_email= user_email.email
     user_password = db_email.password

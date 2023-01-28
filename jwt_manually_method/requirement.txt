@@ -1,0 +1,7 @@
+fastapi
+pydentic
+uvicorn
+alembic
+python-dotenv
+python-jose
+passlib

@@ -2,7 +2,6 @@ from app.database import Base
 from sqlalchemy import Column, String, ForeignKey
 from app.competition.models import CompetitionTable
 from app.utils.same_model import DBBaseModel
-import os
 from app.competition.models import CompetitionTable
 
 

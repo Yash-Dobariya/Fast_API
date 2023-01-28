@@ -1,6 +1,5 @@
 from app.database import Base
-from sqlalchemy import  Column, String, Enum, Date, Integer
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import  Column, String
 from app.utils.same_model import DBBaseModel
 
 class User(Base, DBBaseModel):
